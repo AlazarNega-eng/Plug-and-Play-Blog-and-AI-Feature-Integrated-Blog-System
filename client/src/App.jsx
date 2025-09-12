@@ -1,5 +1,6 @@
 import React from "react"; 
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
 import Layout from "./pages/admin/Layout";
@@ -12,8 +13,13 @@ import 'quill/dist/quill.snow.css'
 
 
 const App = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   return (
-    <div>
+    <>
+      {!isAdminRoute && <Navbar />}
+      <main className={isAdminRoute ? "" : "pt-20"}>
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/blog/:id' element={<Blog />} />
@@ -24,7 +30,8 @@ const App = () => {
             <Route path='comments' element={<Comments />} />
           </Route>
         </Routes>
-    </div>
+      </main>
+    </>
   )
 }
 

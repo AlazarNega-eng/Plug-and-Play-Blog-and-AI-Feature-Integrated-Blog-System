@@ -1,12 +1,51 @@
-# React + Vite
+### Plug-and-Play Blog and AI Feature Integrated Blog System — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Minimal React + Vite frontend for a plug-and-play blogging platform with admin tools and optional AI features. This app provides a fast SPA with routes for Home, Blog details, and an Admin dashboard (add/list blogs, manage comments, login).
 
-Currently, two official plugins are available:
+#### Features
+- **Home and Blog pages** with reusable UI components
+- **Admin dashboard**: add/list blogs, review comments, login page
+- **Theming** via `ThemeContext`
+- **Optimized build** with Vite and ESLint setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+#### Tech Stack
+- **React 18** with hooks
+- **Vite** for dev/build/preview
+- **ESLint** for code quality
 
-## Expanding the ESLint configuration
+#### Getting Started
+1) Prerequisites: Node.js 18+ and npm
+2) Install dependencies:
+   ```bash
+   npm install
+   ```
+3) Start dev server:
+   ```bash
+   npm run dev
+   ```
+4) Build for production:
+   ```bash
+   npm run build
+   ```
+5) Preview production build:
+   ```bash
+   npm run preview
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+#### Project Structure (key folders)
+- `src/pages/` — route-level pages (e.g., `Home.jsx`, `Blog.jsx`, `pages/admin/*`)
+- `src/components/` — UI components (including `components/admin/*`)
+- `src/contexts/` — app-wide state (`ThemeContext.jsx`)
+- `public/` — static assets
+
+#### Configuration
+- Environment variables (optional): configure backend/API base URL via Vite envs, e.g. create `.env` and use `VITE_API_BASE_URL` in code via `import.meta.env.VITE_API_BASE_URL`.
+
+#### NPM Scripts
+- `dev` — start Vite dev server
+- `build` — build production assets
+- `preview` — preview the production build
+
+#### Code Quality
+- ESLint is configured in `eslint.config.js`. Run your editor’s ESLint integration for best results.
+
