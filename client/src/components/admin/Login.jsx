@@ -1,18 +1,68 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppContext } from '../../context/AppContext';
+import { toast } from 'react-hot-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Navbar from '../Navbar';
+import { assets } from '../../assets/assets';
 
 const Login = () => {
     const { theme } = useTheme();
+    const { axios, setToken, token } = useAppContext();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async(e) => {
+    // Redirect if already logged in
+    useEffect(() => {
+        if (token) {
+            navigate('/admin', { replace: true });
+        }
+    }, [token, navigate]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-    }
+        
+        // Basic validation
+        if (!email || !password) {
+            toast.error('Please fill in all fields');
+            return;
+        }
+
+        setLoading(true);
+        
+        try {
+            const { data } = await axios.post('/api/admin/login', { email, password });
+            
+            if (data?.success) {
+                const authToken = `Bearer ${data.token}`;
+                setToken(authToken);
+                localStorage.setItem('token', authToken);
+                axios.defaults.headers.common['Authorization'] = authToken;
+                
+                toast.success('Login successful!');
+                
+                // Redirect to the intended page or default to admin dashboard
+                const from = location.state?.from?.pathname || '/admin';
+                navigate(from, { replace: true });
+            } else {
+                throw new Error(data?.message || 'Login failed');
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
 
   return (
-    <div className={`flex justify-center items-center h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Navbar />
+      <div className="container mx-auto px-4 pt-42 pb-12 flex justify-center items-start">
         <div className={`w-full max-w-sm p-6 max-md:m-6 border shadow-xl rounded-lg ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-primary/30'}`}>
             <div className='flex flex-col items-center justify-center'>
                 <div className='w-full py-6 text-center'>
@@ -48,23 +98,29 @@ const Login = () => {
                     </div>
                     <button 
                         type='submit' 
-                        className='w-full py-3 font-medium rounded cursor-pointer transition-all'
+                        disabled={loading}
+                        className='w-full py-3 font-medium rounded cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed'
                         style={{
                             backgroundColor: '#5044E5',
                             color: '#ffffff'
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#4338ca';
+                            if (!loading) {
+                                e.target.style.backgroundColor = '#4338ca';
+                            }
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#5044E5';
+                            if (!loading) {
+                                e.target.style.backgroundColor = '#5044E5';
+                            }
                         }}
                     > 
-                        Login 
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
             </div>
         </div>
+      </div>
     </div>
   )
 }

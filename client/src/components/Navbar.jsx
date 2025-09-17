@@ -1,10 +1,11 @@
 import React from 'react'
 import { assets } from '../assets/assets'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAppContext } from '../context/AppContext';
 
 const Navbar = () => {
-  const navigate = useNavigate();
+  const { navigate, token, logout } = useAppContext();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -40,23 +41,43 @@ const Navbar = () => {
               </svg>
             )}
           </button>
-          <button
-            onClick={() => navigate("/admin")}
-            className='flex items-center gap-2 rounded-lg text-sm cursor-pointer px-6 py-2.5 transition-all duration-200 font-medium shadow-sm'
-            style={{
-              backgroundColor: '#5044E5',
-              color: '#ffffff'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#4338ca';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#5044E5';
-            }}
-          >
-            Login
-            <img src={assets.arrow} className='w-3' alt="arrow" />
-          </button>
+          {token ? (
+            <button
+              onClick={() => navigate("/admin")}
+              className='flex items-center gap-2 rounded-lg text-sm cursor-pointer px-6 py-2.5 transition-all duration-200 font-medium shadow-sm'
+              style={{
+                backgroundColor: '#5044E5',
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#4338ca';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#5044E5';
+              }}
+            >
+              Dashboard
+              <img src={assets.arrow} className='w-3' alt="arrow" />
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/admin")}
+              className='flex items-center gap-2 rounded-lg text-sm cursor-pointer px-6 py-2.5 transition-all duration-200 font-medium shadow-sm'
+              style={{
+                backgroundColor: '#5044E5',
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#4338ca';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#5044E5';
+              }}
+            >
+              Login
+              <img src={assets.arrow} className='w-3' alt="arrow" />
+            </button>
+          )}
         </div>
       </div>
     </nav>

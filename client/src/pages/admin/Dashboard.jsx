@@ -1,12 +1,11 @@
 import React from 'react'
 import { assets } from '../../assets/assets'
-import { dashboard_data } from '../../assets/assets'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import BlogTableItem from '../../components/admin/BlogTableItem'
 import { useTheme } from '../../contexts/ThemeContext'
-
-
+import { useAppContext } from '../../context/AppContext';
+import { toast } from 'react-hot-toast';
 
 const Dashboard = () => {
    const { theme } = useTheme();
@@ -18,8 +17,15 @@ const Dashboard = () => {
     recentBlogs: []
    }) 
 
+   const{axios} = useAppContext();
+
    const fetchDashboardData = async () => {
-    setDashboardData(dashboard_data)
+    try {
+        const {data} = await axios.get("/api/admin/dashboard");
+        data.success ? setDashboardData(data.dashboardData) : toast.error(data.message);
+    } catch (error) {
+        toast.error("Something went wrong");
+    }
    }
 
    useEffect(() => {

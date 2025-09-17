@@ -3,30 +3,58 @@ import { useParams } from 'react-router-dom'
 import Footer from '../components/Footer'
 import Loader from '../components/Loader'
 import Moment from 'moment'
-import { assets, comments_data, blog_data } from '../assets/assets'
+import { assets } from '../assets/assets'
+import { useAppContext } from '../context/AppContext';
+import { toast } from 'react-hot-toast';
 
 
 const Blog = () => {
 
   const {id} = useParams();
 
+  const{axios} = useAppContext();
+
 const [data, setData] = useState(null)
 const [comments, setComments] = useState([])
 const [name, setName] = useState("")
 const [content, setContent] = useState("")
-const [loading, setLoading] = useState(true)
 
 const fetchBlog = async () => {
-   const data = blog_data.find(item => item._id === id)
-   setData(data)
-   setLoading(false)  }
+   try {
+      const {data} = await axios.get(`/api/blog/${id}`);
+      data.success ? setData(data.blog) : toast.error(data.message);
+   } catch (error) {
+    toast.error("Something went wrong");
+   }
+}
 
 const fetchComments = async () => {
-   setComments(comments_data)
+   try {
+      const {data} = await axios.post(`/api/blog/${id}/comments`, {blogID: id});
+      if(data.success){
+         setComments(data.comments)
+      }else{
+         toast.error(data.message);
+      }
+   } catch (error) {
+      toast.error("Something went wrong");
+   }
 }
 
 const addComment = async (e) => {
    e.preventDefault()
+   try {
+      const {data} = await axios.post("/api/blog/add-comment", {name, content, blog: id});
+      if(data.success){
+         toast.success(data.message);
+         setName("");
+         setContent("");
+      }else{
+         toast.error(data.message);
+      }
+   } catch (error) {
+      toast.error("Something went wrong");
+   }
 }
 
 useEffect(() => {
