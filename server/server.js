@@ -42,6 +42,11 @@ app.get('/', (req, res) => {
     });
 })
 
+// Handle favicon requests to prevent 500 errors
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end(); // No content response
+});
+
 app.get('/health', async (req, res) => {
     try {
         const dbStatus = Blog.db ? Blog.db.readyState : 0;
