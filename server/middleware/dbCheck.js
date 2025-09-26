@@ -1,22 +1,25 @@
 import mongoose from "mongoose";
+import connectDB from "../configs/db.js";
 
 const dbCheck = async (req, res, next) => {
     try {
         // Check if database is connected
         if (mongoose.connection.readyState !== 1) {
             console.log('Database not connected, attempting to connect...');
-            
-            // Try to connect if not connected
-            if (process.env.MONGODB_URI) {
-                await mongoose.connect(`${process.env.MONGODB_URI}/quickblog`, {
-                    maxPoolSize: 1,
-                    serverSelectionTimeoutMS: 5000,
-                    socketTimeoutMS: 45000,
-                });
-            } else {
+
+            if (!process.env.MONGODB_URI) {
                 return res.status(503).json({
                     success: false,
                     message: "Database configuration not available"
+                });
+            }
+
+            // Reuse shared connector which caches the connection
+            const conn = await connectDB();
+            if (!conn || mongoose.connection.readyState !== 1) {
+                return res.status(503).json({
+                    success: false,
+                    message: "Database connection not available. Please try again later."
                 });
             }
         }

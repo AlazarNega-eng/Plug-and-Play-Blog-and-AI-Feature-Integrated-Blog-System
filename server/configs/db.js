@@ -1,42 +1,55 @@
 import mongoose from "mongoose";
 
+// Cache connection across hot reloads/serverless invocations
+let cached = global.__mongoose_conn__ || { conn: null, promise: null };
+global.__mongoose_conn__ = cached;
+
+function buildMongoUri(base) {
+    if (!base) return '';
+    // If URI already includes a path segment after host (i.e., has a DB name), return as is
+    // Matches: mongodb://user:pass@host:port/dbname?... OR mongodb+srv://.../dbname?...
+    const hasDbName = /mongodb(?:\+srv)?:\/\/[^/]+\/[^?/#]+/i.test(base);
+    if (hasDbName) return base;
+    // If ends without db name, append '/quickblog'
+    return base.endsWith('/') ? `${base}quickblog` : `${base}/quickblog`;
+}
+
 const connectDB = async () => {
     try {
-        // Check if already connected
-        if (mongoose.connection.readyState === 1) {
-            console.log("Database already connected");
-            return mongoose.connection;
+        if (cached.conn) {
+            return cached.conn;
         }
 
-        // Handle connection events
-        mongoose.connection.on('connected', () => console.log("Database connected"));
-        mongoose.connection.on('error', (err) => console.error("Database connection error:", err));
-        mongoose.connection.on('disconnected', () => console.log("Database disconnected"));
-
-        // Connect to MongoDB
-        const mongoUri = process.env.MONGODB_URI;
-        if (!mongoUri) {
+        const mongoUriBase = process.env.MONGODB_URI;
+        if (!mongoUriBase) {
             console.error("MONGODB_URI environment variable is not set");
             return null;
         }
 
-        const connection = await mongoose.connect(`${mongoUri}/quickblog`, {
-            // Optimize for serverless
-            maxPoolSize: 1,
-            serverSelectionTimeoutMS: 5000,
-            socketTimeoutMS: 45000,
-            bufferCommands: false,
-            bufferMaxEntries: 0
-        });
+        const mongoUri = buildMongoUri(mongoUriBase);
 
-        console.log("Successfully connected to MongoDB");
-        return connection;
+        if (!cached.promise) {
+            // Connection event logs (set up once)
+            mongoose.connection.on('connected', () => console.log("Database connected"));
+            mongoose.connection.on('error', (err) => console.error("Database connection error:", err));
+            mongoose.connection.on('disconnected', () => console.log("Database disconnected"));
+
+            cached.promise = mongoose.connect(mongoUri, {
+                // Optimize for serverless
+                maxPoolSize: 1,
+                serverSelectionTimeoutMS: 8000,
+                socketTimeoutMS: 45000,
+                // Disable command buffering in serverless
+                bufferCommands: false
+            }).then((m) => m);
+        }
+
+        cached.conn = await cached.promise;
+        return cached.conn;
     } catch (error) {
         console.error("Database connection failed:", error.message);
-        // Don't throw error to prevent function crash
-        // The app should still work even if DB connection fails initially
         return null;
     }
-}
+};
 
 export default connectDB;
