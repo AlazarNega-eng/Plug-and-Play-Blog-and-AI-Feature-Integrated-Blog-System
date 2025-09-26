@@ -5,7 +5,7 @@ const connectDB = async () => {
         // Check if already connected
         if (mongoose.connection.readyState === 1) {
             console.log("Database already connected");
-            return;
+            return mongoose.connection;
         }
 
         // Handle connection events
@@ -16,21 +16,26 @@ const connectDB = async () => {
         // Connect to MongoDB
         const mongoUri = process.env.MONGODB_URI;
         if (!mongoUri) {
-            throw new Error("MONGODB_URI environment variable is not set");
+            console.error("MONGODB_URI environment variable is not set");
+            return null;
         }
 
-        await mongoose.connect(`${mongoUri}/quickblog`, {
+        const connection = await mongoose.connect(`${mongoUri}/quickblog`, {
             // Optimize for serverless
             maxPoolSize: 1,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
+            bufferCommands: false,
+            bufferMaxEntries: 0
         });
 
         console.log("Successfully connected to MongoDB");
+        return connection;
     } catch (error) {
         console.error("Database connection failed:", error.message);
         // Don't throw error to prevent function crash
         // The app should still work even if DB connection fails initially
+        return null;
     }
 }
 

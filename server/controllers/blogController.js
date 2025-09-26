@@ -200,6 +200,14 @@ export const addBlog = async (req, res) => {
 
 export const getAllBlogs = async (req, res) => {
     try {
+        // Check database connection
+        if (!Blog.db || Blog.db.readyState !== 1) {
+            return res.status(503).json({ 
+                success: false, 
+                message: "Database connection not available. Please try again later." 
+            });
+        }
+
         const blogs = await Blog.find({isPublished: true});
         res.json({success: true, blogs});
     } catch (error) {
@@ -210,6 +218,14 @@ export const getAllBlogs = async (req, res) => {
 
 export const getBlogById = async (req, res) => {
     try {
+        // Check database connection
+        if (!Blog.db || Blog.db.readyState !== 1) {
+            return res.status(503).json({ 
+                success: false, 
+                message: "Database connection not available. Please try again later." 
+            });
+        }
+
         // Support fetching id from URL params, query, or body for compatibility
         const blogId = req.params.blogId || req.query.blogId || req.body.blogId || req.params.id || req.body.id;
         if (!blogId) {
@@ -267,6 +283,14 @@ export const addComment = async (req, res) => {
 
 export const getComments = async (req, res) => {
     try {
+        // Check database connection
+        if (!Comment.db || Comment.db.readyState !== 1) {
+            return res.status(503).json({ 
+                success: false, 
+                message: "Database connection not available. Please try again later." 
+            });
+        }
+
         // Accept blog id from URL params or body with multiple key variants
         const blogId = req.params.blogId || req.body.blogId || req.body.blogID || req.query.blogId;
         if (!blogId) {
