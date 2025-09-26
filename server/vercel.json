@@ -3,7 +3,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "test.js"
+            "dest": "server-vercel.js"
         }
     ]
 }
