@@ -52,7 +52,8 @@ export const updateBlog = async (req, res) => {
             image = aiGeneratedImage;
         } else if (imgeFile) {
             try {
-                const fileBuffer = fs.readFileSync(imgeFile.path);
+                // With memory storage, file buffer is directly available
+                const fileBuffer = imgeFile.buffer;
                 
                 if (imagekit) {
                     // NOTE: We are not deleting the old image because we don't store ImageKit fileId in DB.
@@ -78,13 +79,13 @@ export const updateBlog = async (req, res) => {
 
                     image = optimizedImageUrl;
                 } else {
-                    // Fallback to local file path if ImageKit is not available
-                    image = imgeFile.path;
+                    // Fallback to placeholder if ImageKit is not available
+                    image = generateFreeThumbnail(title, category);
                 }
             } catch (imageKitError) {
                 console.log('ImageKit upload failed:', imageKitError.message);
-                // Fallback to local file path if ImageKit fails
-                image = imgeFile.path;
+                // Fallback to placeholder if ImageKit fails
+                image = generateFreeThumbnail(title, category);
             }
         }
 
@@ -125,7 +126,7 @@ export const addBlog = async (req, res) => {
         
         //Check if all required fields are provided
         if(!title || !description || !category) {
-            return res.json({success: false, message: "Title, description, and category are required"})
+            return res.status(400).json({success: false, message: "Title, description, and category are required"})
         }
 
         let image = null;
@@ -136,7 +137,8 @@ export const addBlog = async (req, res) => {
             image = aiGeneratedImage;
         } else if(imgeFile) {
             try {
-                const fileBuffer = fs.readFileSync(imgeFile.path);
+                // With memory storage, file buffer is directly available
+                const fileBuffer = imgeFile.buffer;
                 
                 if(imagekit) {
                     //Upload image to imagekit
@@ -158,13 +160,13 @@ export const addBlog = async (req, res) => {
 
                     image = optimizedImageUrl;
                 } else {
-                    // Fallback to local file path if ImageKit is not available
-                    image = imgeFile.path;
+                    // Fallback to placeholder if ImageKit is not available
+                    image = generateFreeThumbnail(title, category);
                 }
             } catch (imageKitError) {
                 console.log("ImageKit upload failed:", imageKitError.message);
-                // Fallback to local file path if ImageKit fails
-                image = imgeFile.path;
+                // Fallback to placeholder if ImageKit fails
+                image = generateFreeThumbnail(title, category);
             }
         } else {
             // No image provided, use a default placeholder (placehold.co)
@@ -184,7 +186,7 @@ export const addBlog = async (req, res) => {
 
     } catch (error) {
         console.log("Blog creation error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -194,7 +196,7 @@ export const getAllBlogs = async (req, res) => {
         res.json({success: true, blogs});
     } catch (error) {
         console.log("Get all blogs error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -203,16 +205,16 @@ export const getBlogById = async (req, res) => {
         // Support fetching id from URL params, query, or body for compatibility
         const blogId = req.params.blogId || req.query.blogId || req.body.blogId || req.params.id || req.body.id;
         if (!blogId) {
-            return res.json({ success: false, message: "Blog id is required" });
+            return res.status(400).json({ success: false, message: "Blog id is required" });
         }
         const blog = await Blog.findById(blogId);
         if(!blog) {
-            return res.json({success: false, message: "Blog not found"});
+            return res.status(404).json({success: false, message: "Blog not found"});
         }
         res.json({success: true, blog});
     } catch (error) {
         console.log("Get blog by id error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -226,7 +228,7 @@ export const deleteBlog = async (req, res) => {
         res.json({success: true, message: "Blog deleted successfully"});
     } catch (error) {
         console.log("Delete blog error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -240,7 +242,7 @@ export const togglePublish = async (req, res) => {
         res.json({success: true, message: "Blog published status updated successfully"});
     } catch (error) {
         console.log("Toggle publish error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -251,7 +253,7 @@ export const addComment = async (req, res) => {
         res.json({success: true, message: "Comment added successfully and waiting for approval"});
     } catch (error) {
         console.log("Add comment error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -260,13 +262,13 @@ export const getComments = async (req, res) => {
         // Accept blog id from URL params or body with multiple key variants
         const blogId = req.params.blogId || req.body.blogId || req.body.blogID || req.query.blogId;
         if (!blogId) {
-            return res.json({ success: false, message: "Blog id is required" });
+            return res.status(400).json({ success: false, message: "Blog id is required" });
         }
         const comments = await Comment.find({blog: blogId, isApproved: true}).sort({createdAt: -1});
         res.json({success: true, comments});
     } catch (error) {
         console.log("Get comments error:", error.message);
-        res.json({success: false, message: error.message});
+        res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -279,12 +281,12 @@ export const generateContent = async (req, res) => {
         const keywords = Array.isArray(req.body.keywords) ? req.body.keywords : [];
 
         if (!prompt || typeof prompt !== 'string') {
-            return res.json({ success: false, message: 'Prompt (title/topic) is required' });
+            return res.status(400).json({ success: false, message: 'Prompt (title/topic) is required' });
         }
 
         // Check if Gemini API key is available
         if (!process.env.GEMINI_API_KEY) {
-            return res.json({ 
+            return res.status(500).json({ 
                 success: false, 
                 message: 'Gemini API key not configured. Please add GEMINI_API_KEY to your environment variables.' 
             });
@@ -307,7 +309,7 @@ Requirements:\n- Start with a compelling introduction (2-3 paragraphs).\n- Use c
         const content = await main(fullPrompt);
         
         if (!content || content.trim().length === 0) {
-            return res.json({ success: false, message: 'Generated content is empty. Please try again.' });
+            return res.status(500).json({ success: false, message: 'Generated content is empty. Please try again.' });
         }
         
         console.log('Content generated successfully, length:', content.length);
@@ -317,18 +319,18 @@ Requirements:\n- Start with a compelling introduction (2-3 paragraphs).\n- Use c
         
         // Provide more specific error messages
         if (error.message.includes('API key') || error.message.includes('authentication')) {
-            return res.json({ 
+            return res.status(500).json({ 
                 success: false, 
                 message: 'Gemini API authentication failed. Please check your GEMINI_API_KEY.' 
             });
         } else if (error.message.includes('quota') || error.message.includes('limit')) {
-            return res.json({ 
+            return res.status(429).json({ 
                 success: false, 
                 message: 'Gemini API quota exceeded. Please try again later or check your API limits.' 
             });
         }
         
-        res.json({ success: false, message: `Content generation failed: ${error.message}` });
+        res.status(500).json({ success: false, message: `Content generation failed: ${error.message}` });
     }
 }
 
@@ -337,7 +339,7 @@ export const generateThumbnailAI = async (req, res) => {
         const { title, category } = req.body;
         
         if (!title || typeof title !== 'string') {
-            return res.json({ success: false, message: 'Blog title is required' });
+            return res.status(400).json({ success: false, message: 'Blog title is required' });
         }
 
         // Generate free placeholder image
@@ -349,7 +351,7 @@ export const generateThumbnailAI = async (req, res) => {
         });
     } catch (error) {
         console.log("Generate thumbnail error:", error.message);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -358,7 +360,7 @@ export const generateThumbnailOptionsAI = async (req, res) => {
         const { title, category } = req.body;
         
         if (!title || typeof title !== 'string') {
-            return res.json({ success: false, message: 'Blog title is required' });
+            return res.status(400).json({ success: false, message: 'Blog title is required' });
         }
 
         // Generate multiple free placeholder images with different colors
@@ -368,6 +370,6 @@ export const generateThumbnailOptionsAI = async (req, res) => {
         res.json({ success: true, imageUrls });
     } catch (error) {
         console.log("Generate thumbnail options error:", error.message);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
