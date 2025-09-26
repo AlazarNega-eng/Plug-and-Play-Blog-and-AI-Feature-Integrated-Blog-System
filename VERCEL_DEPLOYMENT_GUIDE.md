@@ -17,10 +17,20 @@
 - **Fix**: Added global error handler, increased body size limits, 404 handler
 - **Files Modified**: `server/server.js`
 
-### 4. **Vercel Configuration** ✅
-- **Issue**: Unnecessary build configuration causing deployment issues
-- **Fix**: Simplified `vercel.json` configuration
-- **Files Modified**: `server/vercel.json`
+### 4. **Top-Level Await Issue** ✅ **NEW FIX**
+- **Issue**: Top-level `await` in server.js causing FUNCTION_INVOCATION_FAILED
+- **Fix**: Removed top-level await, made database connection non-blocking
+- **Files Modified**: `server/server.js`, `server/configs/db.js`
+
+### 5. **Vercel Serverless Function Structure** ✅ **NEW FIX**
+- **Issue**: Incorrect Vercel function configuration
+- **Fix**: Created proper API structure with `server/api/index.js`
+- **Files Modified**: `server/vercel.json`, created `server/api/index.js`
+
+### 6. **Database Connection Optimization** ✅ **NEW FIX**
+- **Issue**: Database connection not optimized for serverless
+- **Fix**: Added connection pooling limits and better error handling
+- **Files Modified**: `server/configs/db.js`
 
 ## Environment Variables Required
 
@@ -88,12 +98,18 @@ GEMINI_API_KEY=your_gemini_api_key_here
    GET https://your-app.vercel.app/
    ```
 
-2. **Test blog creation**:
+2. **Test detailed health check**:
+   ```
+   GET https://your-app.vercel.app/health
+   ```
+   This will show database connection status and environment info.
+
+3. **Test blog creation**:
    ```
    POST https://your-app.vercel.app/api/blog/add
    ```
 
-3. **Check Vercel function logs** in the dashboard for any remaining issues
+4. **Check Vercel function logs** in the dashboard for any remaining issues
 
 ## Common Issues and Solutions:
 
@@ -114,10 +130,30 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ## Next Steps:
 
-1. Deploy the changes to Vercel
-2. Set up your environment variables
-3. Test the blog creation functionality
-4. If you want image uploads, set up ImageKit account and add the keys
-5. If you want AI features, get a Gemini API key and add it
+1. **Deploy the changes to Vercel**:
+   ```bash
+   git add .
+   git commit -m "Fix Vercel serverless function crash - remove top-level await"
+   git push origin main
+   ```
 
-The 500 error should now be resolved! 🎉
+2. **Set up your environment variables** in Vercel dashboard:
+   - `MONGODB_URI` (required)
+   - `JWT_SECRET` (required)
+
+3. **Test the health endpoint first**:
+   Visit `https://your-app.vercel.app/health` to check if everything is working
+
+4. **Test the blog creation functionality**
+
+5. **Optional**: Set up ImageKit and Gemini API keys if you want those features
+
+## Key Changes Made:
+
+- ✅ **Removed top-level await** that was causing FUNCTION_INVOCATION_FAILED
+- ✅ **Created proper Vercel serverless function structure** with `/api/index.js`
+- ✅ **Optimized database connection** for serverless environment
+- ✅ **Added health check endpoint** for debugging
+- ✅ **Made database connection non-blocking** to prevent function crashes
+
+The serverless function crash should now be resolved! 🎉

@@ -4,11 +4,19 @@ import cors from "cors";
 import connectDB from "./configs/db.js";    
 import adminRouter from "./routes/adminRoutes.js";
 import blogRouter from "./routes/blogRoutes.js";
+import Blog from "./models/Blog.js";
 
 const app = express();
 
-// Database connection
-await connectDB();
+// Initialize database connection (non-blocking for Vercel)
+let dbConnected = false;
+connectDB().then(() => {
+    dbConnected = true;
+    console.log('Database connection established');
+}).catch(err => {
+    console.error('Database connection error:', err);
+    dbConnected = false;
+});
 
 // Middlewares
 app.use(cors());
@@ -32,6 +40,37 @@ app.get('/', (req, res) => {
         status: "healthy",
         timestamp: new Date().toISOString()
     });
+})
+
+app.get('/health', async (req, res) => {
+    try {
+        const dbStatus = Blog.db ? Blog.db.readyState : 0;
+        const dbStatusText = {
+            0: 'disconnected',
+            1: 'connected',
+            2: 'connecting',
+            3: 'disconnecting'
+        };
+
+        res.json({
+            status: "healthy",
+            timestamp: new Date().toISOString(),
+            database: {
+                status: dbStatusText[dbStatus] || 'unknown',
+                readyState: dbStatus,
+                connected: dbConnected
+            },
+            environment: process.env.NODE_ENV || 'development',
+            vercel: !!process.env.VERCEL,
+            mongodb_uri_set: !!process.env.MONGODB_URI
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "unhealthy",
+            timestamp: new Date().toISOString(),
+            error: error.message
+        });
+    }
 })
 
 app.use('/api/admin', adminRouter)

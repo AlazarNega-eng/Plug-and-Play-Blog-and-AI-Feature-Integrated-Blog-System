@@ -120,6 +120,14 @@ export const updateBlog = async (req, res) => {
 
 export const addBlog = async (req, res) => {
     try {
+        // Check database connection
+        if (!Blog.db.readyState || Blog.db.readyState !== 1) {
+            return res.status(503).json({ 
+                success: false, 
+                message: "Database connection not available. Please try again later." 
+            });
+        }
+
         const {title, subTitle, description, category, isPublished} = JSON.parse(req.body.blog);
         const imgeFile = req.file;
         const aiGeneratedImage = req.body.aiGeneratedImage;
