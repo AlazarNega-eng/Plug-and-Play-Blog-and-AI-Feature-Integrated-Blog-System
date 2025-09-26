@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { assets } from '../../assets/assets'
 import { Outlet } from 'react-router-dom'
-import SideBar from '../../components/admin/SideBar';
+import Sidebar from '../../components/admin/Sidebar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppContext } from '../../context/AppContext';
 
@@ -32,7 +32,7 @@ const Layout = () => {
   </div>
 
     <div className='flex h-[calc(100vh-70px)]'>
-       <SideBar />
+       <Sidebar />
        <Outlet />     
     </div>
 </>
