@@ -79,7 +79,7 @@ const BlogTableItem = ({blog, fetchBlogs, index}) => {
                 <button
                     onClick={deleteBlog}
                     aria-label="Delete blog"
-                    className={`inline-flex items-center justify-center h-8 w-8 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1
+                    className={`inline-flex items-center justify-center h-8 w-8 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 cursor-pointer
                         ${theme === 'dark'
                             ? 'border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-400 focus:ring-red-500/40'
                             : 'border-red-300/60 text-red-600 hover:bg-red-50 hover:border-red-400 focus:ring-red-500/30'}`}

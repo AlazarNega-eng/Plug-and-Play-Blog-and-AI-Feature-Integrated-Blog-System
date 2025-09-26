@@ -66,11 +66,11 @@ const CommentTableItem = ({comment, fetchComments}) => {
                 Approved
               </span>
             ) : (
-              <button onClick={approveComment} className={`text-xs rounded-full px-3 py-1 shadow-sm transition-colors focus:outline-none focus:ring-2 ${theme === 'dark' ? 'border border-green-500/40 bg-green-600/20 text-green-300 hover:bg-green-600/30 hover:border-green-500 focus:ring-green-500/40' : 'border border-green-600 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-700 focus:ring-green-500/30'}`}>
+              <button onClick={approveComment} className={`text-xs rounded-full px-3 py-1 shadow-sm transition-colors focus:outline-none focus:ring-2 ${theme === 'dark' ? 'border border-green-500/40 bg-green-600/20 text-green-300 hover:bg-green-600/30 hover:border-green-500 focus:ring-green-500/40 cursor-pointer' : 'border border-green-600 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-700 focus:ring-green-500/30 cursor-pointer'}`}>
                 Approve
               </button>
             )}
-            <button onClick={deleteComment} className={`p-1 transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-600'}`}>
+            <button onClick={deleteComment} className={`p-1 transition-colors cursor-pointer ${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-600'}`}>
               <img className='cursor-pointer w-5 h-5 hover:scale-110 transition-all'
                 src={assets.bin_icon} 
                 alt="Delete comment" 

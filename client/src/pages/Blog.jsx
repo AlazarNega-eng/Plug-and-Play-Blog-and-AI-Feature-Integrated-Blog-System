@@ -106,7 +106,15 @@ useEffect(() => {
         <form onSubmit={addComment} className='flex flex-col items-start gap-4 max-w-lg'>
           <input onChange={(e) => setName(e.target.value)} value={name} type="text" placeholder='Name' required className='w-full p-2 border border-gray-300 rounded-md outline-none' style={{color: 'var(--color-text)', background: 'var(--color-bg)'}}/>
           <textarea onChange={(e) => setContent(e.target.value)} value={content} placeholder='Comment' required className='w-full p-2 border border-gray-300 rounded-md outline-none h-48' style={{color: 'var(--color-text)', background: 'var(--color-bg)'}}/>
-          <button type='submit' className='bg-primary text-white px-8 p-2 m-1.5 rounded hover:scale-102 transition-all cursor-pointer'>Add Comment</button>
+          <button 
+            type='submit'
+            className='flex items-center gap-2 rounded-lg text-sm cursor-pointer px-6 py-2.5 transition-all duration-200 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1'
+            style={{ backgroundColor: '#5044E5', color: '#ffffff' }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#4338ca' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#5044E5' }}
+          >
+            Add Comment
+          </button>
         </form>
       </div>
       
