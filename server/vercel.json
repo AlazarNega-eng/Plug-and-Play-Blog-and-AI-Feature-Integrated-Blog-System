@@ -3,7 +3,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "server-minimal.js"
+            "dest": "server.js"
         }
     ]
 }

@@ -49,7 +49,13 @@ app.get('/favicon.ico', (req, res) => {
 
 app.get('/health', async (req, res) => {
     try {
-        const dbStatus = Blog.db ? Blog.db.readyState : 0;
+        let dbStatus = 0;
+        try {
+            dbStatus = Blog.db ? Blog.db.readyState : 0;
+        } catch (error) {
+            console.log('Database status check failed:', error.message);
+        }
+
         const dbStatusText = {
             0: 'disconnected',
             1: 'connected',
@@ -67,7 +73,9 @@ app.get('/health', async (req, res) => {
             },
             environment: process.env.NODE_ENV || 'development',
             vercel: !!process.env.VERCEL,
-            mongodb_uri_set: !!process.env.MONGODB_URI
+            mongodb_uri_set: !!process.env.MONGODB_URI,
+            imagekit_configured: !!(process.env.IMAGEKIT_PUBLIC_KEY && process.env.IMAGEKIT_PRIVATE_KEY),
+            gemini_configured: !!process.env.GEMINI_API_KEY
         });
     } catch (error) {
         res.status(500).json({
