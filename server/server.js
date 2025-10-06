@@ -5,6 +5,7 @@ import connectDB from "./configs/db.js";
 import adminRouter from "./routes/adminRoutes.js";
 import blogRouter from "./routes/blogRoutes.js";
 import Blog from "./models/Blog.js";
+import dbCheck from "./middleware/dbCheck.js";
 
 const app = express();
 
@@ -85,6 +86,9 @@ app.get('/health', async (req, res) => {
         });
     }
 })
+
+// Ensure DB connection for all API routes
+app.use('/api', dbCheck)
 
 app.use('/api/admin', adminRouter)
 app.use('/api/blog', blogRouter)
