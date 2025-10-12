@@ -1,0 +1,22 @@
+# Ignore development files
+node_modules
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore server files that aren't needed for API
+server/node_modules
+server/uploads
+server/test.js
+server/server*.js
+
+# Ignore client development files
+client/node_modules
+client/src
+client/public
+client/*.config.js
+client/README.md
+
+# Keep only built client files
+!client/dist
