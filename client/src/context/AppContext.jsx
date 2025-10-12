@@ -3,7 +3,17 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+// Set base URL for API calls
+const getBaseURL = () => {
+    // In production (Vercel), use the deployed API URL
+    if (import.meta.env.PROD) {
+        return 'https://plug-and-play-blog-and-ai-feature-i.vercel.app';
+    }
+    // In development, use the environment variable or default to localhost
+    return import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+};
+
+axios.defaults.baseURL = getBaseURL();
 
 const AppContext = createContext();
 
