@@ -13,9 +13,6 @@ server/server*.js
 
 # Ignore client development files
 client/node_modules
-client/src
-client/public
-client/*.config.js
 client/README.md
 
 # Keep only built client files

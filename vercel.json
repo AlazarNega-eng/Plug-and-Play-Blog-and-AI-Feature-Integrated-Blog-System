@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm install",
   "routes": [
     {
       "src": "/api/health",
@@ -18,8 +21,12 @@
       "dest": "/api/index.js"
     },
     {
+      "src": "^/$",
+      "dest": "/client/dist/index.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/client/$1"
+      "dest": "/client/dist/$1"
     }
   ],
   "functions": {
