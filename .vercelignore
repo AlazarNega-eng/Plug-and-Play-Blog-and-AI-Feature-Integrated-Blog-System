@@ -15,5 +15,13 @@ server/server*.js
 client/node_modules
 client/README.md
 
+# Keep client source files for build
+!client/src
+!client/public
+!client/vite.config.js
+!client/index.html
+!client/package.json
+!client/package-lock.json
+
 # Keep only built client files
 !client/dist
