@@ -304,6 +304,37 @@ export const getComments = async (req, res) => {
     }
 }
 
+const generateFallbackContent = (prompt, language, outlinePoints, keywords) => {
+    const intro = `# ${prompt}\n\nWrite a helpful and engaging blog post about ${prompt}. Start with a clear introduction that explains why the topic matters and what readers will learn.`;
+    const sections = [
+        '## Introduction',
+        `This blog post explores ${prompt} in ${language.toLowerCase()}. We will cover the main ideas, practical steps, and useful tips for readers who want to understand the topic quickly.`,
+        '## Key Benefits',
+        '- Easy to understand overview of the topic\n- Practical actions readers can use\n- Clear examples for better learning',
+    ];
+
+    if (outlinePoints.length) {
+        sections.push('## Suggested Outline');
+        sections.push(outlinePoints.map((point, index) => `${index + 1}. ${point}`).join('\n'));
+    }
+
+    if (keywords.length) {
+        sections.push('## Keywords to Remember');
+        sections.push(keywords.map((keyword) => `- ${keyword}`).join('\n'));
+    }
+
+    sections.push(
+        '## How to Apply This',
+        `Use the information above to apply the main ideas from ${prompt} in your own context. Focus on practical examples and keep the tone friendly and actionable.`,
+        '## Conclusion',
+        `To wrap up, ${prompt} is important because it helps readers solve real problems and take meaningful action. Use these tips to make your next blog post stronger and more useful.`,
+        '## FAQs',
+        '- **What is this post about?** It explains the main ideas behind ' + prompt + ' and how readers can use them.\n- **Who should read it?** Anyone looking for practical, easy-to-follow guidance.\n- **What is the key takeaway?** Focus on clear examples and actionable advice.'
+    );
+
+    return `${intro}\n\n${sections.join('\n\n')}`;
+};
+
 export const generateContent = async (req, res) => {
     try {
         const { prompt } = req.body;
@@ -316,11 +347,13 @@ export const generateContent = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Prompt (title/topic) is required' });
         }
 
-        // Check if Gemini API key is available
+        // If Gemini API key is not available, return a simple fallback draft for development.
         if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Gemini API key not configured. Please add GEMINI_API_KEY to your environment variables.' 
+            const fallbackContent = generateFallbackContent(prompt, language, outlinePoints, keywords);
+            return res.json({
+                success: true,
+                content: fallbackContent,
+                message: 'Gemini API key not configured. Returned fallback content for development.'
             });
         }
 
