@@ -1,23 +1,13 @@
 import express from "express";
 import cors from "cors";
 import 'dotenv/config';
+import mongoose from "mongoose";
 import connectDB from "../configs/db.js";    
 import adminRouter from "../routes/adminRoutes.js";
 import blogRouter from "../routes/blogRoutes.js";
-import Blog from "../models/Blog.js";
 import dbCheck from "../middleware/dbCheck.js";
 
 const app = express();
-
-// Initialize database connection (non-blocking for Vercel)
-let dbConnected = false;
-connectDB().then(() => {
-    dbConnected = true;
-    console.log('Database connection established');
-}).catch(err => {
-    console.error('Database connection error:', err);
-    dbConnected = false;
-});
 
 // Middlewares
 app.use(cors());
@@ -48,14 +38,11 @@ app.get('/favicon.ico', (req, res) => {
     res.status(204).end(); // No content response
 });
 
-app.get('/health', async (req, res) => {
+const healthCheck = async (req, res) => {
     try {
-        let dbStatus = 0;
-        try {
-            dbStatus = Blog.db ? Blog.db.readyState : 0;
-        } catch (error) {
-            console.log('Database status check failed:', error.message);
-        }
+        const connection = await connectDB();
+        const dbStatus = mongoose.connection.readyState;
+        const dbConnected = !!connection && dbStatus === 1;
 
         const dbStatusText = {
             0: 'disconnected',
@@ -64,8 +51,8 @@ app.get('/health', async (req, res) => {
             3: 'disconnecting'
         };
 
-        res.json({
-            status: "healthy",
+        res.status(dbConnected ? 200 : 503).json({
+            status: dbConnected ? "healthy" : "unhealthy",
             timestamp: new Date().toISOString(),
             database: {
                 status: dbStatusText[dbStatus] || 'unknown',
@@ -79,13 +66,16 @@ app.get('/health', async (req, res) => {
             gemini_configured: !!process.env.GEMINI_API_KEY
         });
     } catch (error) {
+        console.error('Health check failed:', error);
         res.status(500).json({
             status: "unhealthy",
             timestamp: new Date().toISOString(),
-            error: error.message
+            mongodb_uri_set: !!process.env.MONGODB_URI
         });
     }
-});
+};
+
+app.get(['/health', '/api/health'], healthCheck);
 
 // Ensure DB connection for all API routes
 app.use('/api', dbCheck);

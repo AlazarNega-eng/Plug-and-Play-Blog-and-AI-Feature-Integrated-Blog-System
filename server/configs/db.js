@@ -29,10 +29,12 @@ const connectDB = async () => {
         const mongoUri = buildMongoUri(mongoUriBase);
 
         if (!cached.promise) {
-            // Connection event logs (set up once)
-            mongoose.connection.on('connected', () => console.log("Database connected"));
-            mongoose.connection.on('error', (err) => console.error("Database connection error:", err));
-            mongoose.connection.on('disconnected', () => console.log("Database disconnected"));
+            if (!global.__mongoose_events_registered__) {
+                mongoose.connection.on('connected', () => console.log("Database connected"));
+                mongoose.connection.on('error', (err) => console.error("Database connection error:", err));
+                mongoose.connection.on('disconnected', () => console.log("Database disconnected"));
+                global.__mongoose_events_registered__ = true;
+            }
 
             cached.promise = mongoose.connect(mongoUri, {
                 // Optimize for serverless
@@ -47,6 +49,8 @@ const connectDB = async () => {
         cached.conn = await cached.promise;
         return cached.conn;
     } catch (error) {
+        cached.conn = null;
+        cached.promise = null;
         console.error("Database connection failed:", error.message);
         return null;
     }

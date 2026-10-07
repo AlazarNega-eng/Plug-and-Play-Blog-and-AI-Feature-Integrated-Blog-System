@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 const getBaseURL = () => {
     // In production (Vercel), use the deployed API URL
     if (import.meta.env.PROD) {
-        return 'https://plug-and-play-blog-and-ai-feature-i.vercel.app';
+        return import.meta.env.VITE_BACKEND_URL || 'https://plug-and-play-blog-and-ai-feature-i.vercel.app';
     }
     // In development, use the environment variable or default to localhost
     return import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';

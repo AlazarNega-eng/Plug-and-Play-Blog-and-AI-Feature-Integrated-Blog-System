@@ -53,6 +53,16 @@ IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
+For the database error described above, set `MONGODB_URI` in the Vercel project that serves the API, for the Production environment. The database must allow connections from Vercel (for MongoDB Atlas, check the cluster's Network Access allowlist). After changing environment variables, redeploy the project. Never put the MongoDB URI in the frontend project or expose it as a `VITE_` variable.
+
+If the frontend and API are separate Vercel projects, set this variable in the frontend project to the API project's production origin (without an `/api` suffix), then redeploy the frontend:
+
+```bash
+VITE_BACKEND_URL=https://your-backend-project.vercel.app
+```
+
+The frontend keeps the existing API origin if `VITE_BACKEND_URL` is unset.
+
 ## How to Set Environment Variables in Vercel:
 
 1. Go to your Vercel dashboard
